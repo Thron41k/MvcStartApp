@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = "View project authors";
+}
+
+<style>
+    table {
+        border-spacing: 0 15px;
+        align-self: center;
+    }
+
+    th {
+        background-color: #4287f5;
+        color: white;
+    }
+
+    th,
+    td {
+        width: 150px;
+        text-align: center;
+        border: 1px solid black;
+        padding: 5px;
+    }
+
+    h2 {
+        color: #4287f5;
+    }
+</style>
+<script>
+    async function GetLogs() {
+        const table = document.querySelector('table');
+        const loading = document.getElementById('loading');
+
+        try {
+            loading.style.display = 'block';
+            table.style.opacity = '0.5';
+
+            const response = await fetch('/Logs/GetLogs');
+
+            if (!response.ok) {
+                throw new Error('Ошибка при получении данных');
+            }
+
+            const logs = await response.json();
+            let tableHtml = '<tr><th>Идентификатор</th><th>Дата</th><th>URL</th></tr>';
+
+            logs.forEach(log => {
+                tableHtml += `
+                    <tr>
+                        <td>${log.id}</td>
+                        <td>${new Date(log.date).toLocaleString()}</td>
+                        <td>${log.url}</td>
+                    </tr>
+                `;
+            });
+
+            document.querySelector('table').innerHTML = tableHtml;
+        } catch (error) {
+            console.error('Ошибка:', error);
+            document.querySelector('table').innerHTML = '<tr><th>Идентификатор</th><th>Дата</th><th>URL</th></tr><tr><td colspan="3">Ошибка при загрузке данных</td></tr>';
+        } finally {
+        loading.style.display = 'none';
+        table.style.opacity = '1';
+        }
+    }
+</script>
+<div class="text-center">
+    <h2 class="display-4" style="text-align: left">История</h2>
+    <br>
+    <div id="loading" style="display: none;">Загрузка данных...</div>
+    <button onclick="GetLogs()">Обновить</button>
+    <br>
+    <table>
+        <tr><th>Идентификатор</th><th>Дата</th><th>URL</th></tr>
+        @foreach (var log in Model)
+        {
+            <tr>
+                <td>@log.Id</td>
+                <td>@log.Date</td>
+                <td>@log.Url</td>
+            </tr>
+        }
+    </table>
+</div>
